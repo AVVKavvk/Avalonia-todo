@@ -1,20 +1,64 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:TodoApp.ViewModels"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:conv="using:TodoApp.Converters"
         x:Class="TodoApp.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="TodoApp">
+        Title="Todo App"
+        Width="480" Height="600"
+        WindowStartupLocation="CenterScreen">
 
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
+  <DockPanel Margin="16">
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0 0 0 16">
+      <TextBox
+        Text="{Binding NewTodoText}"
+        PlaceholderText="What needs to be done?"
+        Width="340"
+        VerticalContentAlignment="Center">
+        <TextBox.KeyBindings>
+          <KeyBinding Gesture="Enter" Command="{Binding AddTodoCommand}" />
+        </TextBox.KeyBindings>
+      </TextBox>
+      <Button Content="Add" Command="{Binding AddTodoCommand}" Width="80" />
+    </StackPanel>
 
+    <ScrollViewer>
+      <ItemsControl ItemsSource="{Binding Todos}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:TodoItemViewModel">
+            <Border Margin="0 0 0 8" Padding="12 10" CornerRadius="6"
+                    Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
+              <Grid ColumnDefinitions="Auto,*,Auto">
+
+                <CheckBox
+                  Grid.Column="0"
+                  IsChecked="{Binding IsCompleted}"
+                  Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).ToggleCompleteCommand}"
+                  CommandParameter="{Binding}"
+                  Margin="0 0 10 0" />
+
+                <TextBlock
+                  Grid.Column="1"
+                  Text="{Binding Title}"
+                  VerticalAlignment="Center"
+                  TextDecorations="{Binding IsCompleted, Converter={x:Static conv:Converters.BoolToStrikethrough}}"
+                  Opacity="{Binding IsCompleted, Converter={x:Static conv:Converters.BoolToOpacity}}" />
+
+                <Button
+                  Grid.Column="2"
+                  Content="✕"
+                  Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).DeleteTodoCommand}"
+                  CommandParameter="{Binding}"
+                  Background="Transparent"
+                  Padding="6 2" />
+
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+
+  </DockPanel>
 </Window>
